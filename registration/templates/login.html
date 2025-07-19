@@ -1,0 +1,67 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Login</title>
+    <link rel="stylesheet" href="{% static 'style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+</head>
+<body>
+    <div class="theme-toggle">
+        <i id="theme-icon" class="fa-solid fa-moon" onclick="toggleTheme()" title="Toggle Theme"></i>
+    </div>
+
+    <div class="container">
+        <h2>Login</h2>
+        {% if error %}
+            <p style="color: red; text-align: center;">{{ error }}</p>
+        {% endif %}
+        <form method="post">
+            {% csrf_token %}
+            <div class="form-group">
+                <label for="id_email">Email</label>
+                {{ form.email }}
+            </div>
+            <div class="form-group">
+                <label for="id_password">Password</label>
+                {{ form.password }}
+            </div>
+            <button type="submit">Login</button>
+        </form>
+        <a href="{% url 'signup' %}">Don't have an account? Sign Up</a>
+    </div>
+<script>
+function toggleTheme() {
+    const body = document.body;
+    const icon = document.getElementById('theme-icon');
+    if (body.classList.contains('dark')) {
+        body.classList.remove('dark');
+        body.classList.add('light');
+        icon.classList.remove('fa-sun');
+        icon.classList.add('fa-moon');
+        localStorage.setItem('theme', 'light');
+    } else {
+        body.classList.remove('light');
+        body.classList.add('dark');
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+        localStorage.setItem('theme', 'dark');
+    }
+}
+
+// Load saved theme and icon
+window.onload = () => {
+    const theme = localStorage.getItem('theme') || 'light';
+    const icon = document.getElementById('theme-icon');
+    document.body.classList.add(theme);
+    if (theme === 'dark') {
+        icon.classList.remove('fa-moon');
+        icon.classList.add('fa-sun');
+    }
+};
+</script>
+
+
+</body>
+</html>

@@ -1,0 +1,156 @@
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: #f0f2f5;
+    height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0;
+}
+
+.container {
+    width: 100%;
+    max-width: 400px;
+    background: #ffffff;
+    padding: 30px;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.1);
+    border-radius: 12px;
+    box-sizing: border-box;
+}
+
+
+h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    color: #333;
+}
+
+form {
+    display: flex;
+    flex-direction: column;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"] {
+    padding: 10px;
+    margin: 8px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+button {
+    padding: 10px;
+    background-color: #007bff;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    margin-top: 10px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+button:hover {
+    background-color: #0056b3;
+}
+
+a {
+    text-decoration: none;
+    color: #007bff;
+    text-align: center;
+    display: block;
+    margin-top: 10px;
+}
+
+.form-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.form-group label {
+    font-weight: 500;
+    margin-bottom: 5px;
+}
+
+.form-group input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+body.light {
+    background-color: #f0f2f5;
+    color: #000;
+}
+body.dark {
+    background-color: #121212;
+    color: #fff;
+}
+
+.container {
+    background-color: inherit;
+    color: inherit;
+}
+
+.input-icon {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.input-icon i {
+    position: absolute;
+    top: 50%;
+    left: 10px;
+    transform: translateY(-50%);
+    color: #999;
+}
+
+.input-icon input {
+    padding-left: 35px;
+    width: 100%;
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+
+.theme-toggle {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    font-size: 22px;
+    cursor: pointer;
+    z-index: 1000;
+    color: gray;
+}
+
+body.dark .theme-toggle i {
+    color: #fff;
+}
+
+
+body.dark .container {
+    background-color: #1e1e1e;
+    color: #f1f1f1;
+}
+
+body.dark h2,
+body.dark label {
+    color: #f1f1f1;
+}
+body.dark a {
+    color: red;
+}
+body.light a {
+    color: red;
+}
+
+body.dark input {
+    background-color: #2b2b2b;
+    color: #fff;
+    border: 1px solid #444;
+}
+
+body.dark #theme-icon {
+    color: yellow;
+}
