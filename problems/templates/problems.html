@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Problems - CodePlatform</title>
+    <meta name="description" content="Browse and solve coding problems">
+    <link rel="icon" href="favicon.png">
+    <link rel="stylesheet" href="{% static 'problems/style-new.css' %}">
+</head>
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">CodePlatform</a>
+            <div class="nav-icons">
+                <a href="{% url 'user-details' user.id %}" class="nav-icon" title="Profile">
+                    <svg fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
+                    </svg>
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container">
+        <!-- Welcome Section -->
+        <div class="welcome-section">
+            <h1>Welcome back, {{user.firstname}}!</h1>
+            <div class="user-info">
+                <p>{{user.firstname}} {{user.lastname}} • Member since {{user.join_date|date:"F Y"}}</p>
+            </div>
+        </div>
+
+        <!-- Problems Section -->
+        <div class="problems-header">
+            <h2 class="problems-title">Practice Problems</h2>
+            <div class="filter-tabs">
+                <div class="tab active">All</div>
+                <div class="tab">Easy</div>
+                <div class="tab">Medium</div>
+                <div class="tab">Hard</div>
+                <div class="tab">Solved</div>
+            </div>
+        </div>
+
+        <div class="problems-grid">
+            <!-- Problem 1 -->
+            <div class="problem-card">
+                <div class="problem-header">
+                    <div class="problem-title">Two Sum</div>
+                    <span class="problem-difficulty difficulty-easy">Easy</span>
+                </div>
+                <p class="problem-description">
+                    Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
+                </p>
+                <div class="problem-tags">
+                    <span class="tag">Array</span>
+                    <span class="tag">Hash Table</span>
+                </div>
+                <div class="problem-stats">
+                    <div class="stats-left">
+                        <span>Acceptance: 49.2%</span>
+                        <span class="status-solved">✓ Solved</span>
+                    </div>
+                    <span>1.2M submissions</span>
+                </div>
+            </div>
+
+            <!-- Problem 2 -->
+            <div class="problem-card">
+                <div class="problem-header">
+                    <div class="problem-title">Binary Tree Inorder Traversal</div>
+                    <span class="problem-difficulty difficulty-medium">Medium</span>
+                </div>
+                <p class="problem-description">
+                    Given the root of a binary tree, return the inorder traversal of its nodes' values.
+                </p>
+                <div class="problem-tags">
+                    <span class="tag">Stack</span>
+                    <span class="tag">Tree</span>
+                    <span class="tag">Binary Tree</span>
+                </div>
+                <div class="problem-stats">
+                    <div class="stats-left">
+                        <span>Acceptance: 74.1%</span>
+                        <span class="status-attempted">◐ Attempted</span>
+                    </div>
+                    <span>856K submissions</span>
+                </div>
+            </div>
+
+            <!-- Problem 3 -->
+            <div class="problem-card">
+                <div class="problem-header">
+                    <div class="problem-title">Median of Two Sorted Arrays</div>
+                    <span class="problem-difficulty difficulty-hard">Hard</span>
+                </div>
+                <p class="problem-description">
+                    Given two sorted arrays nums1 and nums2 of size m and n respectively, return the median of the two sorted arrays.
+                </p>
+                <div class="problem-tags">
+                    <span class="tag">Array</span>
+                    <span class="tag">Binary Search</span>
+                    <span class="tag">Divide and Conquer</span>
+                </div>
+                <div class="problem-stats">
+                    <div class="stats-left">
+                        <span>Acceptance: 35.2%</span>
+                    </div>
+                    <span>1.8M submissions</span>
+                </div>
+            </div>
+
+            <!-- Problem 4 -->
+            <div class="problem-card">
+                <div class="problem-header">
+                    <div class="problem-title">Valid Parentheses</div>
+                    <span class="problem-difficulty difficulty-easy">Easy</span>
+                </div>
+                <p class="problem-description">
+                    Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.
+                </p>
+                <div class="problem-tags">
+                    <span class="tag">String</span>
+                    <span class="tag">Stack</span>
+                </div>
+                <div class="problem-stats">
+                    <div class="stats-left">
+                        <span>Acceptance: 40.1%</span>
+                        <span class="status-solved">✓ Solved</span>
+                    </div>
+                    <span>2.1M submissions</span>
+                </div>
+            </div>
+
+            <!-- Problem 5 -->
+            <div class="problem-card">
+                <div class="problem-header">
+                    <div class="problem-title">Longest Palindromic Substring</div>
+                    <span class="problem-difficulty difficulty-medium">Medium</span>
+                </div>
+                <p class="problem-description">
+                    Given a string s, return the longest palindromic substring in s.
+                </p>
+                <div class="problem-tags">
+                    <span class="tag">String</span>
+                    <span class="tag">Dynamic Programming</span>
+                </div>
+                <div class="problem-stats">
+                    <div class="stats-left">
+                        <span>Acceptance: 32.8%</span>
+                    </div>
+                    <span>1.5M submissions</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Add interactivity for tabs
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                this.classList.add('active');
+                // Here you would filter problems based on the selected tab
+            });
+        });
+
+        // Add click handlers for problem cards
+        document.querySelectorAll('.problem-card').forEach(card => {
+            card.addEventListener('click', function() {
+                // Navigate to individual problem page
+                console.log('Navigate to problem:', this.querySelector('.problem-title').textContent);
+            });
+        });
+    </script>
+</body>
+</html>

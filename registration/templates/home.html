@@ -1,122 +1,199 @@
+{%load static%}
 <!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
   <title>Online Judge | Home</title>
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+   <link rel="stylesheet" href="{% static 'registration/style.css' %}">
   <link rel="icon" href="favicon.png">
-  <style>
-    * {
-      margin: 0;
-      padding: 0;
-      box-sizing: border-box;
-    }
 
-    body, html {
-      height: 100%;
-      font-family: Arial, sans-serif;
-    }
-
-    .container {
-      display: flex;
-      height: 100vh;
-    }
-
-    .left {
-      flex: 1;
-      background: url('https://via.placeholder.com/800x800.png?text=Online+Judge') no-repeat center center;
-      background-size: cover;
-      position: relative;
-    }
-
-    .left-overlay {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      background: rgba(0,0,0,0.5);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      color: white;
-      text-align: center;
-      padding: 20px;
-    }
-
-    .right {
-      flex: 1;
-      background-color: #f4f4f4;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-    }
-
-    h1 {
-      font-size: 2.5em;
-      margin-bottom: 20px;
-    }
-
-    .btn {
-      display: inline-block;
-      padding: 12px 24px;
-      margin: 10px;
-      background-color: #007bff;
-      color: white;
-      text-decoration: none;
-      border-radius: 5px;
-      font-size: 1em;
-      transition: background-color 0.3s ease;
-    }
-
-    .btn:hover {
-      background-color: #0056b3;
-    }
-
-    footer {
-      position: absolute;
-      bottom: 10px;
-      width: 100%;
-      text-align: center;
-      font-size: 0.8em;
-      color: #888;
-    }
-
-    @media screen and (max-width: 768px) {
-      .container {
-        flex-direction: column;
-      }
-
-      .left, .right {
-        flex: none;
-        height: 50vh;
-      }
-
-      .left-overlay h1 {
-        font-size: 1.5em;
-      }
-    }
-  </style>
 </head>
 <body>
+  <div class="bg-animation"></div>
+  
+  <!-- Code rain effect -->
+  <div class="code-rain"></div>
+
   <div class="container">
-    <div class="left">
-      <div class="left-overlay">
-        <div>
-          <h1>Welcome to Online Judge</h1>
-          <p>Practice coding problems, compete in contests, and improve your skills.</p>
+    <div class="hero-section">
+      <!-- Left side - Logo, subtitle and features -->
+      <div class="left-content">
+        <h1 class="logo">⚡ CodeArena</h1>
+        <p class="subtitle">Where algorithms come to life and coding dreams become reality</p>
+        
+        <div class="features">
+          <div class="feature-card">
+            <span class="feature-icon">🧠</span>
+            <div class="feature-content">
+              <h3 class="feature-title">Smart Challenges</h3>
+              <p class="feature-desc">AI-curated problems that adapt to your skill level</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <span class="feature-icon">⚔️</span>
+            <div class="feature-content">
+              <h3 class="feature-title">Real-time Battles</h3>
+              <p class="feature-desc">Compete with coders worldwide in live contests</p>
+            </div>
+          </div>
+          <div class="feature-card">
+            <span class="feature-icon">📊</span>
+            <div class="feature-content">
+              <h3 class="feature-title">Advanced Analytics</h3>
+              <p class="feature-desc">Track progress with detailed performance insights</p>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Right side - Buttons and stats -->
+      <div class="right-content">
+        <div class="cta-section">
+          <div class="btn-container">
+            <a href="{% url 'signup' %}" class="btn btn-primary">Start Coding</a>
+            <a href="{% url 'login' %}" class="btn btn-secondary">Sign In</a>
+          </div>
+          
+          <div class="stats">
+            <div class="stat">
+              <span class="stat-number">50K+</span>
+              <span class="stat-label">Active Coders</span>
+            </div>
+            <div class="stat">
+              <span class="stat-number">1M+</span>
+              <span class="stat-label">Problems Solved</span>
+            </div>
+            <div class="stat">
+              <span class="stat-number">500+</span>
+              <span class="stat-label">Daily Contests</span>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <div class="right">
-      <h1>Get Started</h1>
-      <a href="{% url 'signup' %}" class="btn">Register</a>
-      <a href="{% url 'login' %}" class="btn">Login</a>
-    </div>
   </div>
+
   <footer>
-    <small>© <script>document.write(new Date().getFullYear())</script> Online Judge. All Rights Reserved.</small>
+    <small>© <span id="year"></span> CodeArena. Empowering the next generation of developers.</small>
   </footer>
+
+  <script>
+    // Update year
+    document.getElementById('year').textContent = new Date().getFullYear();
+
+    // Create floating particles
+    function createParticle() {
+      const particle = document.createElement('div');
+      particle.className = 'particle';
+      
+      const size = Math.random() * 8 + 4;
+      const left = Math.random() * 100;
+      const delay = Math.random() * 8;
+      const duration = Math.random() * 3 + 5;
+      
+      particle.style.width = size + 'px';
+      particle.style.height = size + 'px';
+      particle.style.left = left + '%';
+      particle.style.animationDelay = delay + 's';
+      particle.style.animationDuration = duration + 's';
+      particle.style.background = `hsl(${Math.random() * 60 + 180}, 70%, 60%)`;
+      
+      document.body.appendChild(particle);
+      
+      setTimeout(() => {
+        particle.remove();
+      }, (duration + delay) * 1000);
+    }
+
+    // Create particles periodically
+    setInterval(createParticle, 300);
+
+    // Create code rain effect
+    function createCodeLine() {
+      const line = document.createElement('div');
+      line.className = 'code-line';
+      
+      const codeSnippets = [
+        'function solve()',
+        'if (condition)',
+        'return result;',
+        'for (int i=0;',
+        'while (true)',
+        'print("Hello")',
+        'array.sort()',
+        'map.get(key)',
+        'queue.push()',
+        'stack.pop()'
+      ];
+      
+      line.textContent = codeSnippets[Math.floor(Math.random() * codeSnippets.length)];
+      line.style.left = Math.random() * 100 + '%';
+      line.style.animationDuration = (Math.random() * 3 + 2) + 's';
+      line.style.fontSize = Math.random() * 6 + 10 + 'px';
+      
+      document.querySelector('.code-rain').appendChild(line);
+      
+      setTimeout(() => {
+        line.remove();
+      }, 5000);
+    }
+
+    // Create code lines periodically
+    setInterval(createCodeLine, 400);
+
+    // Add hover effects to feature cards
+    document.querySelectorAll('.feature-card').forEach(card => {
+      card.addEventListener('mouseenter', function() {
+        this.style.transform = 'translateY(-10px) scale(1.02)';
+      });
+      
+      card.addEventListener('mouseleave', function() {
+        this.style.transform = 'translateY(0) scale(1)';
+      });
+    });
+
+    // Add click ripple effect to buttons
+    document.querySelectorAll('.btn').forEach(btn => {
+      btn.addEventListener('click', function(e) {
+        const ripple = document.createElement('div');
+        const rect = this.getBoundingClientRect();
+        const size = Math.max(rect.width, rect.height);
+        const x = e.clientX - rect.left - size / 2;
+        const y = e.clientY - rect.top - size / 2;
+        
+        ripple.style.cssText = `
+          position: absolute;
+          width: ${size}px;
+          height: ${size}px;
+          left: ${x}px;
+          top: ${y}px;
+          background: rgba(255, 255, 255, 0.3);
+          border-radius: 50%;
+          transform: scale(0);
+          animation: ripple 0.6s ease-out;
+          pointer-events: none;
+        `;
+        
+        this.appendChild(ripple);
+        
+        setTimeout(() => {
+          ripple.remove();
+        }, 600);
+      });
+    });
+
+    // Add ripple animation
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes ripple {
+        to {
+          transform: scale(2);
+          opacity: 0;
+        }
+      }
+    `;
+    document.head.appendChild(style);
+  </script>
 </body>
 </html>

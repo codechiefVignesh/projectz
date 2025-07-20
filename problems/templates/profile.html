@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Profile - {{ user.firstname }}</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="icon" href="favicon.png">
+  <link rel="stylesheet" href="{% static 'problems/style-profile.css' %}">
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar">
+  <div class="nav-container">
+    <a href="#" class="logo">CodePlatform</a>
+    <a href="{% url 'problems-page' user.id %}" class="nav-back">
+      <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+        <path fill-rule="evenodd" d="M15 8a.5.5 0 0 0-.5-.5H2.707l3.147-3.146a.5.5 0 1 0-.708-.708l-4 4a.5.5 0 0 0 0 .708l4 4a.5.5 0 0 0 .708-.708L2.707 8.5H14.5A.5.5 0 0 0 15 8z"/>
+      </svg>
+      Back to Problems
+    </a>
+  </div>
+</nav>
+
+<div class="container">
+  <!-- Profile Card -->
+  <div class="profile-card">
+    {% if messages %}
+      {% for message in messages %}
+        <div class="message {{ message.tags }}">{{ message }}</div>
+      {% endfor %}
+    {% endif %}
+
+    <div class="profile-header">
+      <div class="profile-photo-container">
+        {% if user.profile_photo %}
+          <img src="{{ user.profile_photo.url }}" class="profile-photo" alt="Profile Photo">
+        {% else %}
+          <img src="{% static 'default-profile.png' %}" class="profile-photo" alt="Default Photo">
+        {% endif %}
+        <div class="photo-overlay">Change Photo</div>
+      </div>
+      
+      <h1 class="user-name">{{ user.firstname }} {{ user.lastname }}</h1>
+    </div>
+
+    <div class="user-details">
+      <div class="detail-item">
+        <span class="detail-label">First Name</span>
+        <span class="detail-value">{{ user.firstname }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Last Name</span>
+        <span class="detail-value">{{ user.lastname }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Email</span>
+        <span class="detail-value">{{ user.email }}</span>
+      </div>
+      <div class="detail-item">
+        <span class="detail-label">Member Since</span>
+        <span class="detail-value">{{ user.join_date|date:"F d, Y" }}</span>
+      </div>
+    </div>
+
+    <form class="upload-form" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      <div class="file-input-wrapper">
+        <input type="file" name="profile_photo" id="profile_photo" class="file-input" accept="image/*">
+        <label for="profile_photo" class="file-input-button">
+          <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
+            <path d="M6.002 5.5a1.5 1.5 0 1 1-3 0 1.5 1.5 0 0 1 3 0z"/>
+            <path d="M2.002 1a2 2 0 0 0-2 2v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V3a2 2 0 0 0-2-2h-12zm12 1a1 1 0 0 1 1 1v6.5l-3.777-1.947a.5.5 0 0 0-.577.093L6.002 10.5l-2.223-2.445a.5.5 0 0 0-.84.023L1.002 9.5V3a1 1 0 0 1 1-1h12z"/>
+          </svg>
+          Choose Profile Photo
+        </label>
+      </div>
+      <button type="submit" class="upload-button">Update Photo</button>
+    </form>
+
+    <div class="delete-section">
+      <h3 style="color: #e53e3e; margin-bottom: 1rem; font-size: 1.1rem;">Danger Zone</h3>
+      <button type="button" class="delete-button" onclick="showDeleteModal()">
+        <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16" style="margin-right: 0.5rem;">
+          <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z"/>
+          <path fill-rule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"/>
+        </svg>
+        Delete Account
+      </button>
+    </div>
+  </div>
+
+  <!-- Stats Section -->
+  <div class="stats-section">
+    <div class="stats-header">
+      <h2 class="stats-title">Coding Statistics</h2>
+    </div>
+
+    <div class="quick-stats">
+      <div class="stat-card">
+        <div class="stat-number">{{ solved_count }}</div>
+        <div class="stat-label">Problems Solved</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ accuracy }}%</div>
+        <div class="stat-label">Success Rate</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-number">{{ total_submissions|default:0 }}</div>
+        <div class="stat-label">Total Submissions</div>
+      </div>
+    </div>
+
+    <div class="chart-container">
+      <h3 class="chart-title">Programming Languages</h3>
+      <canvas id="langChart" height="300"></canvas>
+    </div>
+
+    <div class="chart-container">
+      <h3 class="chart-title">Problems by Difficulty</h3>
+      <canvas id="diffChart" height="300"></canvas>
+    </div>
+  </div>
+</div>
+
+<!-- Delete Confirmation Modal -->
+<div id="deleteModal" class="modal">
+  <div class="modal-content">
+    <div class="modal-title">⚠️ Delete Account</div>
+    <div class="modal-text">
+      Are you sure you want to delete your account? This action cannot be undone and will permanently remove all your data, including solved problems and statistics.
+    </div>
+    <div class="modal-buttons">
+      <form method="post" action="{% url 'delete-profile' user.id %}" style="display: inline;">
+        {% csrf_token %}
+        <button type="submit" class="modal-button confirm-delete">Yes, Delete My Account</button>
+      </form>
+      <button type="button" class="modal-button cancel-delete" onclick="hideDeleteModal()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // File input preview
+  document.getElementById('profile_photo').addEventListener('change', function(e) {
+    const file = e.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onload = function(e) {
+        document.querySelector('.profile-photo').src = e.target.result;
+      };
+      reader.readAsDataURL(file);
+    }
+  });
+
+  // Delete modal functions
+  function showDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'block';
+  }
+
+  function hideDeleteModal() {
+    document.getElementById('deleteModal').style.display = 'none';
+  }
+
+  // Close modal when clicking outside
+  window.onclick = function(event) {
+    const modal = document.getElementById('deleteModal');
+    if (event.target === modal) {
+      modal.style.display = 'none';
+    }
+  };
+
+  // Chart: Language-wise Submissions
+  const langCtx = document.getElementById('langChart').getContext('2d');
+  const langChart = new Chart(langCtx, {
+    type: 'doughnut',
+    data: {
+      labels: [{% for stat in language_stats %}'{{ stat.language }}',{% endfor %}],
+      datasets: [{
+        data: [{% for stat in language_stats %}{{ stat.count }},{% endfor %}],
+        backgroundColor: [
+          '#667eea',
+          '#764ba2',
+          '#f093fb',
+          '#f5576c',
+          '#4facfe',
+          '#00f2fe'
+        ],
+        borderWidth: 0
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: 'bottom',
+          labels: {
+            padding: 20,
+            usePointStyle: true
+          }
+        }
+      }
+    }
+  });
+
+  // Chart: Difficulty Pie
+  const diffCtx = document.getElementById('diffChart').getContext('2d');
+  const diffChart = new Chart(diffCtx, {
+    type: 'bar',
+    data: {
+      labels: [{% for stat in difficulty_stats %}'{{ stat.difficulty }}',{% endfor %}],
+      datasets: [{
+        label: 'Problems Solved',
+        data: [{% for stat in difficulty_stats %}{{ stat.count }},{% endfor %}],
+        backgroundColor: [
+          '#38a169',  // Easy - Green
+          '#d69e2e',  // Medium - Orange  
+          '#e53e3e'   // Hard - Red
+        ],
+        borderRadius: 8,
+        borderSkipped: false
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          display: false
+        }
+      },
+      scales: {
+        y: { 
+          beginAtZero: true,
+          grid: {
+            color: '#e2e8f0'
+          }
+        },
+        x: {
+          grid: {
+            display: false
+          }
+        }
+      }
+    }
+  });
+</script>
+
+</body>
+</html>
