@@ -7,6 +7,7 @@ urlpatterns = [
     path('home/<int:id>/problems', render_problemspage, name = "problems-page"),
     path('home/<int:id>/', render_homepage, name = "user-details"),
     path('home/<int:id>/delete/', delete_profile, name="delete-profile"),
+    path('home/<int:id>/add-problem/', add_problem, name='add_problem'),
 ]
 
 

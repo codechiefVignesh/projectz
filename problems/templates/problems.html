@@ -15,6 +15,11 @@
         <div class="nav-container">
             <a href="#" class="logo">CodePlatform</a>
             <div class="nav-icons">
+                <a href="{% url 'add_problem' user.id %}" class="nav-icon" title="Add Problem" style="margin-right: 1rem;">
+                    <svg fill="currentColor" viewBox="0 0 20 20">
+                        <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd"/>
+                    </svg>
+                </a>
                 <a href="{% url 'user-details' user.id %}" class="nav-icon" title="Profile">
                     <svg fill="currentColor" viewBox="0 0 20 20">
                         <path fill-rule="evenodd" d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z" clip-rule="evenodd"/>
@@ -36,126 +41,61 @@
 
         <!-- Problems Section -->
         <div class="problems-header">
-            <h2 class="problems-title">Practice Problems</h2>
+            <h2 class="problems-title">Practice Problems ({{ problems|length }})</h2>
             <div class="filter-tabs">
-                <div class="tab active">All</div>
-                <div class="tab">Easy</div>
-                <div class="tab">Medium</div>
-                <div class="tab">Hard</div>
-                <div class="tab">Solved</div>
+                <div class="tab active" data-filter="all">All</div>
+                <div class="tab" data-filter="Easy">Easy</div>
+                <div class="tab" data-filter="Medium">Medium</div>
+                <div class="tab" data-filter="Hard">Hard</div>
+                <div class="tab" data-filter="solved">Solved</div>
             </div>
         </div>
 
         <div class="problems-grid">
-            <!-- Problem 1 -->
-            <div class="problem-card">
-                <div class="problem-header">
-                    <div class="problem-title">Two Sum</div>
-                    <span class="problem-difficulty difficulty-easy">Easy</span>
-                </div>
-                <p class="problem-description">
-                    Given an array of integers nums and an integer target, return indices of the two numbers such that they add up to target.
-                </p>
-                <div class="problem-tags">
-                    <span class="tag">Array</span>
-                    <span class="tag">Hash Table</span>
-                </div>
-                <div class="problem-stats">
-                    <div class="stats-left">
-                        <span>Acceptance: 49.2%</span>
-                        <span class="status-solved">✓ Solved</span>
+            {% for problem in problems %}
+                <div class="problem-card" data-difficulty="{{ problem.difficulty }}">
+                    <div class="problem-header">
+                        <div class="problem-title">{{ problem.title }}</div>
+                        <span class="problem-difficulty difficulty-{{ problem.difficulty|lower }}">{{ problem.difficulty }}</span>
                     </div>
-                    <span>1.2M submissions</span>
-                </div>
-            </div>
-
-            <!-- Problem 2 -->
-            <div class="problem-card">
-                <div class="problem-header">
-                    <div class="problem-title">Binary Tree Inorder Traversal</div>
-                    <span class="problem-difficulty difficulty-medium">Medium</span>
-                </div>
-                <p class="problem-description">
-                    Given the root of a binary tree, return the inorder traversal of its nodes' values.
-                </p>
-                <div class="problem-tags">
-                    <span class="tag">Stack</span>
-                    <span class="tag">Tree</span>
-                    <span class="tag">Binary Tree</span>
-                </div>
-                <div class="problem-stats">
-                    <div class="stats-left">
-                        <span>Acceptance: 74.1%</span>
-                        <span class="status-attempted">◐ Attempted</span>
+                    <p class="problem-description">
+                        {{ problem.description|truncatewords:25 }}
+                    </p>
+                    
+                    {% if problem.get_tags_list %}
+                        <div class="problem-tags">
+                            {% for tag in problem.get_tags_list %}
+                                <span class="tag">{{ tag }}</span>
+                            {% endfor %}
+                        </div>
+                    {% endif %}
+                    
+                    <div class="problem-stats">
+                        <div class="stats-left">
+                            {% if problem.acceptance_rate %}
+                                <span>Acceptance: {{ problem.acceptance_rate }}%</span>
+                            {% endif %}
+                            <!-- You can add solved status logic here -->
+                            <!-- <span class="status-solved">✓ Solved</span> -->
+                        </div>
+                        {% if problem.submissions %}
+                            <span>{{ problem.submissions }} submissions</span>
+                        {% endif %}
                     </div>
-                    <span>856K submissions</span>
                 </div>
-            </div>
-
-            <!-- Problem 3 -->
-            <div class="problem-card">
-                <div class="problem-header">
-                    <div class="problem-title">Median of Two Sorted Arrays</div>
-                    <span class="problem-difficulty difficulty-hard">Hard</span>
-                </div>
-                <p class="problem-description">
-                    Given two sorted arrays nums1 and nums2 of size m and n respectively, return the median of the two sorted arrays.
-                </p>
-                <div class="problem-tags">
-                    <span class="tag">Array</span>
-                    <span class="tag">Binary Search</span>
-                    <span class="tag">Divide and Conquer</span>
-                </div>
-                <div class="problem-stats">
-                    <div class="stats-left">
-                        <span>Acceptance: 35.2%</span>
+            {% empty %}
+                <div class="empty-state">
+                    <div style="text-align: center; padding: 3rem; color: #718096;">
+                        <svg width="64" height="64" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1" style="margin-bottom: 1rem;">
+                            <circle cx="12" cy="12" r="3"/>
+                            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1 1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                        </svg>
+                        <h3 style="margin-bottom: 0.5rem; color: #4a5568;">No problems yet</h3>
+                        <p style="margin-bottom: 1.5rem;">Be the first to add a coding problem!</p>
+                        <a href="{% url 'add_problem' user.id %}" class="btn btn-primary">Add First Problem</a>
                     </div>
-                    <span>1.8M submissions</span>
                 </div>
-            </div>
-
-            <!-- Problem 4 -->
-            <div class="problem-card">
-                <div class="problem-header">
-                    <div class="problem-title">Valid Parentheses</div>
-                    <span class="problem-difficulty difficulty-easy">Easy</span>
-                </div>
-                <p class="problem-description">
-                    Given a string s containing just the characters '(', ')', '{', '}', '[' and ']', determine if the input string is valid.
-                </p>
-                <div class="problem-tags">
-                    <span class="tag">String</span>
-                    <span class="tag">Stack</span>
-                </div>
-                <div class="problem-stats">
-                    <div class="stats-left">
-                        <span>Acceptance: 40.1%</span>
-                        <span class="status-solved">✓ Solved</span>
-                    </div>
-                    <span>2.1M submissions</span>
-                </div>
-            </div>
-
-            <!-- Problem 5 -->
-            <div class="problem-card">
-                <div class="problem-header">
-                    <div class="problem-title">Longest Palindromic Substring</div>
-                    <span class="problem-difficulty difficulty-medium">Medium</span>
-                </div>
-                <p class="problem-description">
-                    Given a string s, return the longest palindromic substring in s.
-                </p>
-                <div class="problem-tags">
-                    <span class="tag">String</span>
-                    <span class="tag">Dynamic Programming</span>
-                </div>
-                <div class="problem-stats">
-                    <div class="stats-left">
-                        <span>Acceptance: 32.8%</span>
-                    </div>
-                    <span>1.5M submissions</span>
-                </div>
-            </div>
+            {% endfor %}
         </div>
     </div>
 
@@ -163,18 +103,85 @@
         // Add interactivity for tabs
         document.querySelectorAll('.tab').forEach(tab => {
             tab.addEventListener('click', function() {
+                // Remove active class from all tabs
                 document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                // Add active class to clicked tab
                 this.classList.add('active');
-                // Here you would filter problems based on the selected tab
+                
+                // Get filter value and apply filter
+                const filter = this.getAttribute('data-filter');
+                filterProblems(filter);
             });
         });
+
+        function filterProblems(filter) {
+            const problemCards = document.querySelectorAll('.problem-card');
+            let visibleCount = 0;
+            
+            problemCards.forEach(card => {
+                let shouldShow = false;
+                
+                if (filter === 'all') {
+                    shouldShow = true;
+                } else if (filter === 'solved') {
+                    // Show only solved problems (you can modify this logic)
+                    const hasSolvedStatus = card.querySelector('.status-solved');
+                    shouldShow = hasSolvedStatus !== null;
+                } else {
+                    // Filter by difficulty
+                    const difficulty = card.getAttribute('data-difficulty');
+                    shouldShow = difficulty === filter;
+                }
+                
+                // Show/hide card with smooth transition
+                if (shouldShow) {
+                    card.style.display = 'block';
+                    visibleCount++;
+                } else {
+                    card.style.display = 'none';
+                }
+            });
+            
+            // Update problems count in header
+            updateProblemsCount(visibleCount, filter);
+        }
+
+        function updateProblemsCount(count, filter) {
+            const titleElement = document.querySelector('.problems-title');
+            if (titleElement) {
+                const filterText = filter === 'all' ? '' : ` (${filter})`;
+                titleElement.textContent = `Practice Problems${filterText} (${count})`;
+            }
+        }
 
         // Add click handlers for problem cards
         document.querySelectorAll('.problem-card').forEach(card => {
             card.addEventListener('click', function() {
                 // Navigate to individual problem page
-                console.log('Navigate to problem:', this.querySelector('.problem-title').textContent);
+                const problemTitle = this.querySelector('.problem-title').textContent;
+                console.log('Navigate to problem:', problemTitle);
+                // You can add navigation logic here
+                // window.location.href = `/problem/${problemId}/`;
             });
+            
+            // Add cursor pointer
+            card.style.cursor = 'pointer';
+            
+            // Add hover effect
+            card.addEventListener('mouseenter', function() {
+                this.style.transform = 'translateY(-2px)';
+            });
+            
+            card.addEventListener('mouseleave', function() {
+                this.style.transform = 'translateY(0)';
+            });
+        });
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            // Set initial count
+            const initialCount = document.querySelectorAll('.problem-card').length;
+            updateProblemsCount(initialCount, 'all');
         });
     </script>
 </body>

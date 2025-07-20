@@ -7,6 +7,7 @@ from django.http import Http404
 from django.db.models import Count, Avg, Sum, F
 from django.contrib.auth.decorators import login_required
 from django.contrib import messages
+from .forms import *
 # Create your views here.
 def render_homepage(request, id):
     user = get_object_or_404(User, id=id)
@@ -68,3 +69,36 @@ def delete_profile(request, id):
     
     # If GET request, redirect back to profile
     return redirect('user-details', id=id)
+
+@login_required
+def add_problem(request, id):
+    if request.method == 'POST':
+        form = ProblemForm(request.POST)
+        if form.is_valid():
+            problem = form.save(commit=False)
+            # You might want to associate the problem with the current user
+            problem.created_by = request.user
+            problem.save()
+            messages.success(request, 'Problem added successfully!')
+            return redirect('problems-page',  id=id)  # Redirect to problems list page
+        else:
+            messages.error(request, 'Please correct the errors below.')
+    else:
+        form = ProblemForm()
+    
+    return render(request, 'add_problems.html', {'form': form})
+
+def problems_list(request):
+    problems = Problem.objects.all().order_by('-id')  # Show newest first
+    
+    # Filter by difficulty if requested
+    difficulty = request.GET.get('difficulty')
+    if difficulty and difficulty in ['Easy', 'Medium', 'Hard']:
+        problems = problems.filter(difficulty=difficulty)
+    
+    # You can add more filtering logic here
+    context = {
+        'problems': problems,
+        'user': request.user,
+    }
+    return render(request, 'problems.html', context)
