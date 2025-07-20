@@ -27,6 +27,9 @@ class User(AbstractBaseUser, PermissionsMixin):
     join_date = models.DateTimeField(auto_now_add=True)
     last_login = models.DateTimeField(null=True, blank=True)
     profile_photo = models.ImageField(upload_to='profile_photos/', blank=True, null=True)
+    is_community_user = models.BooleanField(default=False)
+    is_approved = models.BooleanField(default=False)  # Only relevant if is_community_user is True
+
 
     is_active = models.BooleanField(default=True)
     is_staff = models.BooleanField(default=False)

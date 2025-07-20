@@ -78,10 +78,21 @@
                     <a href="{% url 'signup' %}" class="auth-link">Create Account</a>
                 </p>
             </div>
+            <div class="auth-footer">
+                <p>Wanna Contribute Something? 
+                    <a href="{% url 'join-community' %}" class="auth-link">Join Community</a>
+                </p>
+            </div>
         </div>
     </div>
 
     <script>
+
+        if (window.performance && window.performance.navigation.type === 2) {
+            // Type 2 means "Back/Forward"
+            window.location.reload();
+        }
+
         function toggleTheme() {
             const body = document.body;
             const icon = document.getElementById('theme-icon');

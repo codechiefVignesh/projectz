@@ -7,6 +7,7 @@ urlpatterns = [
     path('', render_homepage, name = "home-page"),
     path('signup/', render_signuppage, name = "signup"),
     path('login/', render_loginpage, name = "login"),
+    path('join-community/', render_communitypage, name = "join-community"),
 ]
 
 
