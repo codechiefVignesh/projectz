@@ -318,6 +318,105 @@
             background: rgba(255, 255, 255, 0.2);
         }
 
+        /* Test Cases Section */
+        .testcase-section {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius-lg);
+            padding: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .testcase-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+            padding-bottom: 0.75rem;
+            border-bottom: 1px solid var(--border-light);
+        }
+
+        .testcase-title {
+            font-weight: 600;
+            color: var(--text-dark);
+            font-size: 1.1rem;
+        }
+
+        .testcase-item {
+            background: var(--bg-primary);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius);
+            padding: 1.5rem;
+            margin-bottom: 1rem;
+            position: relative;
+            animation: slideIn 0.3s ease;
+        }
+
+        .testcase-item:last-child {
+            margin-bottom: 0;
+        }
+
+        .testcase-remove {
+            position: absolute;
+            top: 0.75rem;
+            right: 0.75rem;
+            background: var(--danger);
+            color: white;
+            border: none;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .testcase-remove:hover {
+            background: #dc2626;
+            transform: scale(1.05);
+        }
+
+        .testcase-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .checkbox-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+        }
+
+        .checkbox-input {
+            width: auto;
+            padding: 0;
+            margin: 0;
+        }
+
+        .checkbox-label {
+            font-weight: 500;
+            color: var(--text-medium);
+            font-size: 0.875rem;
+            margin: 0;
+            cursor: pointer;
+        }
+
+        .no-testcases {
+            text-align: center;
+            color: var(--text-light);
+            font-style: italic;
+            padding: 2rem;
+            border: 2px dashed var(--border-medium);
+            border-radius: var(--radius);
+            background: var(--bg-primary);
+        }
+
         /* Buttons */
         .btn {
             padding: 0.75rem 1.5rem;
@@ -388,6 +487,10 @@
             }
 
             .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .testcase-inputs {
                 grid-template-columns: 1fr;
             }
 
@@ -506,6 +609,29 @@
                     <input type="hidden" id="languages" name="languages">
                 </div>
 
+                <!-- Test Cases Section -->
+                <div class="form-group">
+                    <label class="form-label">Test Cases</label>
+                    <div class="testcase-section">
+                        <div class="testcase-header">
+                            <span class="testcase-title">Test Cases</span>
+                            <button type="button" class="btn btn-add" onclick="addTestCase()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <line x1="12" y1="5" x2="12" y2="19"></line>
+                                    <line x1="5" y1="12" x2="19" y2="12"></line>
+                                </svg>
+                                Add Test Case
+                            </button>
+                        </div>
+                        <div id="testCasesContainer">
+                            <div class="no-testcases">
+                                No test cases added yet. Click "Add Test Case" to create your first test case.
+                            </div>
+                        </div>
+                    </div>
+                    <input type="hidden" id="testcases" name="testcases">
+                </div>
+
                 <div class="form-group">
                     <label for="submissions" class="form-label">Total Submissions</label>
                     <input type="text" id="submissions" name="submissions" class="form-input" 
@@ -530,6 +656,8 @@
     <script>
         let tags = [];
         let languages = [];
+        let testCases = [];
+        let testCaseCounter = 0;
 
         function addTag() {
             const input = document.getElementById('tagInput');
@@ -553,6 +681,90 @@
                 updateHiddenField('languages', languages);
                 input.value = '';
             }
+        }
+
+        function addTestCase() {
+            const id = testCaseCounter++;
+            const testCase = {
+                id: id,
+                input: '',
+                expected_output: '',
+                is_sample: false
+            };
+            
+            testCases.push(testCase);
+            renderTestCases();
+            updateTestCasesHiddenField();
+        }
+
+        function removeTestCase(id) {
+            testCases = testCases.filter(tc => tc.id !== id);
+            renderTestCases();
+            updateTestCasesHiddenField();
+        }
+
+        function updateTestCase(id, field, value) {
+            const testCase = testCases.find(tc => tc.id === id);
+            if (testCase) {
+                if (field === 'is_sample') {
+                    testCase[field] = value;
+                } else {
+                    testCase[field] = value;
+                }
+                updateTestCasesHiddenField();
+            }
+        }
+
+        function renderTestCases() {
+            const container = document.getElementById('testCasesContainer');
+            
+            if (testCases.length === 0) {
+                container.innerHTML = `
+                    <div class="no-testcases">
+                        No test cases added yet. Click "Add Test Case" to create your first test case.
+                    </div>
+                `;
+                return;
+            }
+            
+            container.innerHTML = '';
+            testCases.forEach((testCase, index) => {
+                const testCaseDiv = document.createElement('div');
+                testCaseDiv.className = 'testcase-item';
+                testCaseDiv.innerHTML = `
+                    <button type="button" class="testcase-remove" onclick="removeTestCase(${testCase.id})" title="Remove test case">
+                        ×
+                    </button>
+                    <div class="form-group">
+                        <label class="form-label">Test Case ${index + 1}</label>
+                        <div class="testcase-inputs">
+                            <div>
+                                <label class="form-label">Input</label>
+                                <textarea class="form-textarea" placeholder="Enter test input..." 
+                                    onchange="updateTestCase(${testCase.id}, 'input', this.value)"
+                                    style="min-height: 80px;">${testCase.input}</textarea>
+                            </div>
+                            <div>
+                                <label class="form-label">Expected Output</label>
+                                <textarea class="form-textarea" placeholder="Enter expected output..." 
+                                    onchange="updateTestCase(${testCase.id}, 'expected_output', this.value)"
+                                    style="min-height: 80px;">${testCase.expected_output}</textarea>
+                            </div>
+                        </div>
+                        <div class="checkbox-group">
+                            <input type="checkbox" id="sample_${testCase.id}" class="checkbox-input" 
+                                ${testCase.is_sample ? 'checked' : ''}
+                                onchange="updateTestCase(${testCase.id}, 'is_sample', this.checked)">
+                            <label for="sample_${testCase.id}" class="checkbox-label">Sample Test Case (visible to users)</label>
+                        </div>
+                    </div>
+                `;
+                container.appendChild(testCaseDiv);
+            });
+        }
+
+        function updateTestCasesHiddenField() {
+            document.getElementById('testcases').value = JSON.stringify(testCases);
         }
 
         function updateDisplay(containerId, array, tagClass) {
@@ -612,6 +824,7 @@
             // Update hidden fields before submission
             updateHiddenField('tags', tags);
             updateHiddenField('languages', languages);
+            updateTestCasesHiddenField();
         });
 
         // Show success message if problem was added successfully

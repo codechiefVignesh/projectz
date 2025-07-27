@@ -10,7 +10,11 @@ urlpatterns = [
     path('home/<int:id>/delete/', delete_profile, name="delete-profile"),
     path('home/<int:id>/add-problem/', add_problem, name='add_problem'),
     path('logout/', auth_views.LogoutView.as_view(next_page='login'), name='logout'),
-    path("approve-users/", approve_users, name="approve-users")
+    path("approve-users/", approve_users, name="approve-users"),
+    path('home/<int:id>/problems/<int:problem_id>/solve/', solve_problem, name='solve_problem'),
+    path('home/<int:id>/problems/<int:problem_id>/run/', run_code, name='run_code'),
+    path('home/<int:id>/problems/<int:problem_id>/submit/', submit_code, name='submit_code'),
+    path('home/<int:user_id>/problems/<int:problem_id>/solutions/', solution_history, name='solution-history'),
 ]
 
 

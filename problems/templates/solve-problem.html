@@ -1,0 +1,1105 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ problem.title }} - CodePlatform</title>
+    <link rel="icon" href="favicon.png">
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --bg-primary: #ffffff;
+            --bg-secondary: #f8fafc;
+            --bg-tertiary: #f1f5f9;
+            --text-primary: #1e293b;
+            --text-secondary: #64748b;
+            --text-muted: #94a3b8;
+            --border-color: #e2e8f0;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --editor-bg: #ffffff;
+            --editor-border: #e2e8f0;
+        }
+
+        [data-theme="dark"] {
+            --bg-primary: #0f172a;
+            --bg-secondary: #1e293b;
+            --bg-tertiary: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #cbd5e1;
+            --text-muted: #94a3b8;
+            --border-color: #334155;
+            --accent-color: #3b82f6;
+            --accent-hover: #2563eb;
+            --success-color: #10b981;
+            --warning-color: #f59e0b;
+            --error-color: #ef4444;
+            --editor-bg: #1e293b;
+            --editor-border: #334155;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: var(--bg-primary);
+            color: var(--text-primary);
+            transition: all 0.3s ease;
+        }
+
+        /* Navigation */
+        .navbar {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 0 1rem;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+        }
+
+        .nav-left {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--accent-color);
+            text-decoration: none;
+        }
+
+        .problem-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .nav-right {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .theme-toggle {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 0.5rem;
+            cursor: pointer;
+            color: var(--text-primary);
+            transition: all 0.2s;
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .nav-icon {
+            color: var(--text-secondary);
+            text-decoration: none;
+            padding: 0.5rem;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .nav-icon:hover {
+            color: var(--text-primary);
+            background: var(--bg-secondary);
+        }
+
+        .nav-icon svg {
+            width: 20px;
+            height: 20px;
+        }
+
+        /* Main Layout */
+        .main-container {
+            display: flex;
+            height: calc(100vh - 60px);
+        }
+
+        .left-panel {
+            width: 50%;
+            background: var(--bg-primary);
+            border-right: 1px solid var(--border-color);
+            overflow-y: auto;
+        }
+
+        .right-panel {
+            width: 50%;
+            background: var(--bg-secondary);
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* Resizer */
+        .resizer {
+            width: 4px;
+            background: var(--border-color);
+            cursor: col-resize;
+            position: relative;
+            transition: background 0.2s;
+        }
+
+        .resizer:hover {
+            background: var(--accent-color);
+        }
+
+        /* Problem Description */
+        .problem-content {
+            padding: 2rem;
+        }
+
+        .problem-header {
+            margin-bottom: 2rem;
+        }
+
+        .problem-header h1 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            margin-bottom: 1rem;
+        }
+
+        .problem-meta {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            margin-bottom: 1rem;
+        }
+
+        .difficulty-badge {
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .difficulty-easy { background: #dcfce7; color: #166534; }
+        .difficulty-medium { background: #fef3c7; color: #92400e; }
+        .difficulty-hard { background: #fecaca; color: #991b1b; }
+
+        [data-theme="dark"] .difficulty-easy { background: #166534; color: #dcfce7; }
+        [data-theme="dark"] .difficulty-medium { background: #92400e; color: #fef3c7; }
+        [data-theme="dark"] .difficulty-hard { background: #991b1b; color: #fecaca; }
+
+        .problem-stats {
+            display: flex;
+            gap: 1rem;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+        }
+
+        .stat {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .stat svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .problem-description {
+            line-height: 1.7;
+            margin-bottom: 2rem;
+        }
+
+        .problem-description h3 {
+            font-size: 1.125rem;
+            font-weight: 600;
+            margin: 1.5rem 0 0.75rem 0;
+        }
+
+        .problem-description p {
+            margin-bottom: 1rem;
+            color: var(--text-secondary);
+        }
+
+        .example-box {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin: 1rem 0;
+            font-family: 'Consolas', 'Monaco', monospace;
+        }
+
+        .example-box strong {
+            color: var(--text-primary);
+        }
+
+        /* Code Editor Panel */
+        .editor-header {
+            background: var(--bg-primary);
+            border-bottom: 1px solid var(--border-color);
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .language-selector {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            cursor: pointer;
+        }
+
+        .editor-actions {
+            display: flex;
+            gap: 0.75rem;
+        }
+
+        .action-btn {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            padding: 0.5rem 1rem;
+            color: var(--text-primary);
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .action-btn:hover {
+            background: var(--bg-tertiary);
+        }
+
+        .action-btn.primary {
+            background: var(--accent-color);
+            color: white;
+            border-color: var(--accent-color);
+        }
+
+        .action-btn.primary:hover {
+            background: var(--accent-hover);
+        }
+
+        .action-btn.success {
+            background: var(--success-color);
+            color: white;
+            border-color: var(--success-color);
+        }
+
+        .action-btn.success:hover {
+            background: #059669;
+        }
+
+        .action-btn svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .code-editor {
+            flex: 1;
+            background: var(--editor-bg);
+            border: none;
+            outline: none;
+            resize: none;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.5;
+            padding: 1rem;
+            color: var(--text-primary);
+            tab-size: 4;
+        }
+
+        /* Output Panel */
+        .output-panel {
+            background: var(--bg-primary);
+            border-top: 1px solid var(--border-color);
+            max-height: 200px;
+            overflow-y: auto;
+            display: none;
+        }
+
+        .output-panel.visible {
+            display: block;
+        }
+
+        .output-header {
+            padding: 0.75rem 1rem;
+            background: var(--bg-secondary);
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 500;
+            font-size: 0.875rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .output-content {
+            padding: 1rem;
+            font-family: 'Consolas', 'Monaco', monospace;
+            font-size: 0.875rem;
+            white-space: pre-wrap;
+            color: var(--text-secondary);
+            line-height: 1.6;
+        }
+
+        .output-content.success {
+            color: var(--success-color);
+        }
+
+        .output-content.error {
+            color: var(--error-color);
+        }
+
+        /* Enhanced output formatting */
+        .test-result {
+            background: var(--bg-secondary);
+            border: 1px solid var(--border-color);
+            border-radius: 8px;
+            margin: 0.75rem 0;
+            overflow: hidden;
+        }
+
+        .test-header {
+            background: var(--bg-tertiary);
+            padding: 0.75rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .test-header.passed {
+            background: rgba(16, 185, 129, 0.1);
+            border-bottom-color: var(--success-color);
+            color: var(--success-color);
+        }
+
+        .test-header.failed {
+            background: rgba(239, 68, 68, 0.1);
+            border-bottom-color: var(--error-color);
+            color: var(--error-color);
+        }
+
+        .test-body {
+            padding: 1rem;
+        }
+
+        .test-io {
+            margin: 0.5rem 0;
+        }
+
+        .test-io strong {
+            color: var(--text-primary);
+            display: inline-block;
+            min-width: 80px;
+        }
+
+        .test-io code {
+            background: var(--bg-tertiary);
+            padding: 0.25rem 0.5rem;
+            border-radius: 4px;
+            font-family: 'Consolas', 'Monaco', monospace;
+            margin-left: 0.5rem;
+        }
+
+        .status-icon {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .status-icon svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .summary-box {
+            background: var(--bg-secondary);
+            border: 2px solid var(--border-color);
+            border-radius: 8px;
+            padding: 1rem;
+            margin-top: 1rem;
+            text-align: center;
+        }
+
+        .summary-box.success {
+            border-color: var(--success-color);
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .summary-box.partial {
+            border-color: var(--warning-color);
+            background: rgba(245, 158, 11, 0.05);
+        }
+
+        .summary-box.failed {
+            border-color: var(--error-color);
+            background: rgba(239, 68, 68, 0.05);
+        }
+
+        .summary-stats {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .summary-details {
+            font-size: 0.875rem;
+            color: var(--text-secondary);
+        }
+
+        .verdict-badge {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 0.875rem;
+            margin: 0.5rem 0;
+        }
+
+        .verdict-accepted {
+            background: var(--success-color);
+            color: white;
+        }
+
+        .verdict-failed {
+            background: var(--error-color);
+            color: white;
+        }
+
+        .verdict-partial {
+            background: var(--warning-color);
+            color: white;
+        }
+
+        /* Loading state */
+        .loading {
+            opacity: 0.6;
+            pointer-events: none;
+        }
+
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border-color);
+            border-radius: 50%;
+            border-top-color: var(--accent-color);
+            animation: spin 1s ease-in-out infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .main-container {
+                flex-direction: column;
+            }
+            
+            .left-panel, .right-panel {
+                width: 100%;
+                height: 50vh;
+            }
+            
+            .resizer {
+                width: 100%;
+                height: 4px;
+                cursor: row-resize;
+            }
+        }
+    </style>
+</head>
+<body data-theme="light">
+    {% csrf_token %}
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-left">
+            <a href="#" class="logo">CodePlatform</a>
+            <span class="problem-title">{{ problem.title }}</span>
+        </div>
+        <div class="nav-right">
+            <button class="theme-toggle" id="themeToggle" title="Toggle theme">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                </svg>
+            </button>
+            <a href="{% url 'problems-page' user.id %}" class="nav-icon" title="Back to Problems">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M19 12H5"></path>
+                    <path d="M12 19l-7-7 7-7"></path>
+                </svg>
+            </a>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="main-container">
+        <!-- Left Panel - Problem Description -->
+        <div class="left-panel">
+            <div class="problem-content">
+                <div class="problem-header">
+                    <h1>{{ problem.title }}</h1>
+                    <div class="problem-meta">
+                        <span class="difficulty-badge difficulty-{{ problem.difficulty|lower }}">{{ problem.difficulty }}</span>
+                        <div class="problem-stats">
+                            {% if problem.acceptance_rate %}
+                            <span class="stat">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="20,6 9,17 4,12"></polyline>
+                                </svg>
+                                {{ problem.acceptance_rate }}% accepted
+                            </span>
+                            {% endif %}
+                            {% if problem.submissions %}
+                            <span class="stat">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
+                                    <circle cx="9" cy="7" r="4"></circle>
+                                    <path d="M23 21v-2a4 4 0 0 0-3-3.87"></path>
+                                    <path d="M16 3.13a4 4 0 0 1 0 7.75"></path>
+                                </svg>
+                                {{ problem.submissions }} submissions
+                            </span>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+
+                <div class="problem-description">
+                    {{ problem.description|safe }}
+                    
+                    {% if problem.examples %}
+                        {% for example in problem.examples %}
+                            <h3>Example {{ forloop.counter }}:</h3>
+                            <div class="example-box">{{ example|safe }}</div>
+                        {% endfor %}
+                    {% endif %}
+                    
+                    {% if problem.constraints %}
+                        <h3>Constraints:</h3>
+                        <div class="constraints">{{ problem.constraints|safe }}</div>
+                    {% endif %}
+                    
+                    {% if problem.follow_up %}
+                        <h3>Follow-up:</h3>
+                        <p>{{ problem.follow_up }}</p>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+
+        <!-- Resizer -->
+        <div class="resizer" id="resizer"></div>
+
+        <!-- Right Panel - Code Editor -->
+        <div class="right-panel">
+            <div class="editor-header">
+                <select class="language-selector" id="languageSelector">
+                    <option value="python">Python</option>
+                    <option value="javascript">JavaScript</option>
+                    <option value="java">Java</option>
+                    <option value="cpp">C++</option>
+                    <option value="c">C</option>
+                </select>
+                <div class="editor-actions">
+                    <button class="action-btn" id="runBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="5,3 19,12 5,21"></polygon>
+                        </svg>
+                        Run
+                    </button>
+                    <button class="action-btn success" id="submitBtn">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="20,6 9,17 4,12"></polyline>
+                        </svg>
+                        Submit
+                    </button>
+                </div>
+            </div>
+            
+            <textarea class="code-editor" id="codeEditor" placeholder="Write your solution here...">def twoSum(nums, target):
+    """
+    :type nums: List[int]
+    :type target: int
+    :rtype: List[int]
+    """
+    # Your code here
+    pass</textarea>
+
+            <div class="output-panel" id="outputPanel">
+                <div class="output-header">
+                    <span>Output</span>
+                    <button class="action-btn" id="clearOutput" style="padding: 0.25rem 0.5rem; font-size: 0.75rem;">Clear</button>
+                </div>
+                <div class="output-content" id="outputContent"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Theme toggle functionality
+        const themeToggle = document.getElementById('themeToggle');
+        const body = document.body;
+        
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = body.getAttribute('data-theme');
+            const newTheme = currentTheme === 'light' ? 'dark' : 'light';
+            body.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+            
+            // Update theme toggle icon
+            updateThemeIcon(newTheme);
+        });
+
+        function updateThemeIcon(theme) {
+            const icon = themeToggle.querySelector('svg');
+            if (theme === 'dark') {
+                icon.innerHTML = `
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+                `;
+            } else {
+                icon.innerHTML = `
+                    <circle cx="12" cy="12" r="5"></circle>
+                    <line x1="12" y1="1" x2="12" y2="3"></line>
+                    <line x1="12" y1="21" x2="12" y2="23"></line>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                    <line x1="1" y1="12" x2="3" y2="12"></line>
+                    <line x1="21" y1="12" x2="23" y2="12"></line>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+                `;
+            }
+        }
+
+        // Load saved theme
+        const savedTheme = localStorage.getItem('theme') || 'light';
+        body.setAttribute('data-theme', savedTheme);
+        updateThemeIcon(savedTheme);
+
+        // Panel resizing functionality
+        const resizer = document.getElementById('resizer');
+        const leftPanel = document.querySelector('.left-panel');
+        const rightPanel = document.querySelector('.right-panel');
+        let isResizing = false;
+
+        resizer.addEventListener('mousedown', (e) => {
+            isResizing = true;
+            document.addEventListener('mousemove', handleMouseMove);
+            document.addEventListener('mouseup', handleMouseUp);
+        });
+
+        function handleMouseMove(e) {
+            if (!isResizing) return;
+            
+            const containerWidth = document.querySelector('.main-container').offsetWidth;
+            const leftWidth = (e.clientX / containerWidth) * 100;
+            
+            if (leftWidth > 20 && leftWidth < 80) {
+                leftPanel.style.width = leftWidth + '%';
+                rightPanel.style.width = (100 - leftWidth) + '%';
+            }
+        }
+
+        function handleMouseUp() {
+            isResizing = false;
+            document.removeEventListener('mousemove', handleMouseMove);
+            document.removeEventListener('mouseup', handleMouseUp);
+        }
+
+        // Language selector functionality
+        const languageSelector = document.getElementById('languageSelector');
+        const codeEditor = document.getElementById('codeEditor');
+
+        // Get code templates from Django context (if available)
+        const codeTemplates = {
+            {% if problem.code_templates %}
+                {% for lang, template in problem.code_templates.items %}
+                    "{{ lang }}": `{{ template|escapejs }}`,
+                {% endfor %}
+            {% else %}
+                python: `# Write your Python solution here
+def solve():
+    pass`,
+                javascript: `// Write your JavaScript solution here
+function solve() {
+    
+}`,
+                java: `// Write your Java solution here
+class Solution {
+    public void solve() {
+        
+    }
+}`,
+                cpp: `// Write your C++ solution here
+#include <iostream>
+using namespace std;
+
+int main() {
+    return 0;
+}`,
+                c: `// Write your C solution here
+#include <stdio.h>
+
+int main() {
+    return 0;
+}`
+            {% endif %}
+        };
+
+        languageSelector.addEventListener('change', (e) => {
+            const language = e.target.value;
+            codeEditor.value = codeTemplates[language];
+        });
+
+        // Run and Submit functionality
+        const runBtn = document.getElementById('runBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const outputPanel = document.getElementById('outputPanel');
+        const outputContent = document.getElementById('outputContent');
+        const clearOutput = document.getElementById('clearOutput');
+
+        runBtn.addEventListener('click', () => {
+            runCode();
+        });
+
+        submitBtn.addEventListener('click', () => {
+            submitCode();
+        });
+
+        clearOutput.addEventListener('click', () => {
+            outputPanel.classList.remove('visible');
+            outputContent.textContent = '';
+            outputContent.className = 'output-content';
+        });
+
+        function runCode() {
+            const code = codeEditor.value.trim();
+            if (!code) {
+                showOutput('No code to run!', 'error');
+                return;
+            }
+
+            // Show loading state
+            runBtn.classList.add('loading');
+            runBtn.innerHTML = '<div class="spinner"></div> Running...';
+
+            // Send code to backend for execution
+            fetch(`/home/{{ user.id }}/problems/{{ problem.id }}/run/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken(),
+                },
+                body: JSON.stringify({
+                    code: code,
+                    language: languageSelector.value
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset button
+                runBtn.classList.remove('loading');
+                runBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5,3 19,12 5,21"></polygon>
+                    </svg>
+                    Run
+                `;
+
+                if (data.success) {
+                    showOutput(data.output, 'success');
+                } else {
+                    showOutput(data.error || 'Execution failed', 'error');
+                }
+            })
+            .catch(error => {
+                // Reset button
+                runBtn.classList.remove('loading');
+                runBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="5,3 19,12 5,21"></polygon>
+                    </svg>
+                    Run
+                `;
+                showOutput('Error: ' + error.message, 'error');
+            });
+        }
+
+        function submitCode() {
+            const code = codeEditor.value.trim();
+            if (!code) {
+                showOutput('No code to submit!', 'error');
+                return;
+            }
+
+            // Show loading state
+            submitBtn.classList.add('loading');
+            submitBtn.innerHTML = '<div class="spinner"></div> Submitting...';
+
+            // Send code to backend for submission
+            fetch(`/home/{{ user.id }}/problems/{{ problem.id }}/submit/`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCsrfToken(),
+                },
+                body: JSON.stringify({
+                    code: code,
+                    language: languageSelector.value
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Reset button
+                submitBtn.classList.remove('loading');
+                submitBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20,6 9,17 4,12"></polyline>
+                    </svg>
+                    Submit
+                `;
+
+                if (data.success) {
+                    showOutput(data.result, 'success');
+                } else {
+                    showOutput(data.error || 'Submission failed', 'error');
+                }
+            })
+            .catch(error => {
+                // Reset button
+                submitBtn.classList.remove('loading');
+                submitBtn.innerHTML = `
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="20,6 9,17 4,12"></polyline>
+                    </svg>
+                    Submit
+                `;
+                showOutput('Error: ' + error.message, 'error');
+            });
+        }
+
+        function getCsrfToken() {
+            // Try multiple ways to get CSRF token
+            const csrfInput = document.querySelector('[name=csrfmiddlewaretoken]');
+            if (csrfInput) return csrfInput.value;
+            
+            const csrfMeta = document.querySelector('meta[name=csrf-token]');
+            if (csrfMeta) return csrfMeta.getAttribute('content');
+            
+            const csrfCookie = document.cookie
+                .split('; ')
+                .find(row => row.startsWith('csrftoken='));
+            if (csrfCookie) return csrfCookie.split('=')[1];
+            
+            return '';
+        }
+
+        function showOutput(content, type = '') {
+            outputContent.innerHTML = ''; // Clear previous content
+            outputContent.className = `output-content ${type}`;
+            
+            if (type === 'error') {
+                outputContent.innerHTML = `<div style="color: var(--error-color); font-weight: 500;">${content}</div>`;
+            } else {
+                // Parse and format the output
+                formatOutput(content, type);
+            }
+                
+            outputPanel.classList.add('visible');
+        }
+
+        function formatOutput(content, type) {
+            if (content.includes('Test Case') || content.includes('✓ Accepted') || content.includes('✗')) {
+                formatDetailedOutput(content, type);
+            } else {
+                // Simple text output
+                outputContent.innerHTML = `<div>${content}</div>`;
+            }
+        }
+
+        function formatDetailedOutput(content, type) {
+            const lines = content.split('\n');
+            let html = '';
+            let currentTest = null;
+            let inSummary = false;
+            
+            for (let i = 0; i < lines.length; i++) {
+                const line = lines[i].trim();
+                
+                if (line.startsWith('✓ Accepted') || line.startsWith('✗')) {
+                    // Verdict section
+                    const isAccepted = line.startsWith('✓ Accepted');
+                    const verdict = isAccepted ? 'Accepted' : line.split(' ')[1] || 'Failed';
+                    const badgeClass = isAccepted ? 'verdict-accepted' : 'verdict-failed';
+                    
+                    html += `<div class="verdict-badge ${badgeClass}">${verdict}</div>`;
+                    continue;
+                }
+                
+                if (line.startsWith('Test Case')) {
+                    // Close previous test if exists
+                    if (currentTest) {
+                        html += `</div></div>`;
+                    }
+                    
+                    // Start new test case
+                    const testNum = line.split(':')[0];
+                    currentTest = { num: testNum, passed: false };
+                    html += `<div class="test-result">`;
+                    continue;
+                }
+                
+                if (line.startsWith('Input:')) {
+                    const input = line.substring(6).trim();
+                    html += `<div class="test-body"><div class="test-io"><strong>Input:</strong><code>${input}</code></div>`;
+                    continue;
+                }
+                
+                if (line.startsWith('Expected:')) {
+                    const expected = line.substring(9).trim();
+                    html += `<div class="test-io"><strong>Expected:</strong><code>${expected}</code></div>`;
+                    continue;
+                }
+                
+                if (line.startsWith('Your Output:')) {
+                    const output = line.substring(12).trim();
+                    html += `<div class="test-io"><strong>Your Output:</strong><code>${output}</code></div>`;
+                    continue;
+                }
+                
+                if (line.startsWith('✓ Passed')) {
+                    if (currentTest) {
+                        currentTest.passed = true;
+                        html = html.replace('<div class="test-result">', 
+                            '<div class="test-result"><div class="test-header passed">' + 
+                            `<span>${currentTest.num}</span>` +
+                            '<span class="status-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="20,6 9,17 4,12"></polyline></svg> Passed</span></div>');
+                    }
+                    continue;
+                }
+                
+                if (line.startsWith('✗ Failed')) {
+                    if (currentTest) {
+                        const error = line.substring(10).trim() || 'Wrong Answer';
+                        html = html.replace('<div class="test-result">', 
+                            '<div class="test-result"><div class="test-header failed">' + 
+                            `<span>${currentTest.num}</span>` +
+                            `<span class="status-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg> ${error}</span></div>`);
+                    }
+                    continue;
+                }
+                
+                if (line.startsWith('Runtime:')) {
+                    const runtime = line.substring(8).trim();
+                    html += `<div class="test-io"><strong>Runtime:</strong> ${runtime}</div>`;
+                    continue;
+                }
+                
+                if (line.startsWith('Summary:') || line.includes('test cases passed') || line.includes('Score:') || line.includes('Memory:')) {
+                    if (!inSummary) {
+                        // Close any open test case
+                        if (currentTest) {
+                            html += `</div></div>`;
+                            currentTest = null;
+                        }
+                        
+                        // Start summary section
+                        inSummary = true;
+                        const summaryClass = line.includes('Score: 100') ? 'success' : 
+                                           line.includes('Score: 0') ? 'failed' : 'partial';
+                        html += `<div class="summary-box ${summaryClass}">`;
+                    }
+                    
+                    if (line.startsWith('Summary:')) {
+                        const summary = line.substring(8).trim();
+                        html += `<div class="summary-stats">${summary}</div>`;
+                    } else if (line.includes('Runtime:') || line.includes('Memory:') || line.includes('Score:')) {
+                        html += `<div class="summary-details">${line}</div>`;
+                    } else if (line.includes('Congratulations')) {
+                        html += `<div style="margin-top: 0.5rem; font-weight: 500; color: var(--success-color);">${line}</div>`;
+                    } else {
+                        html += `<div class="summary-details">${line}</div>`;
+                    }
+                    continue;
+                }
+                
+                // Handle other lines
+                if (line && !inSummary) {
+                    html += `<div style="margin: 0.5rem 0;">${line}</div>`;
+                } else if (line && inSummary) {
+                    html += `<div class="summary-details">${line}</div>`;
+                }
+            }
+            
+            // Close any remaining open elements
+            if (currentTest) {
+                html += `</div></div>`;
+            }
+            if (inSummary) {
+                html += `</div>`;
+            }
+            
+            outputContent.innerHTML = html;
+        }
+
+        // Keyboard shortcuts
+        document.addEventListener('keydown', (e) => {
+            if (e.ctrlKey || e.metaKey) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    runCode();
+                } else if (e.key === 's') {
+                    e.preventDefault();
+                    submitCode();
+                }
+            }
+        });
+
+        // Auto-resize textarea
+        codeEditor.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = this.scrollHeight + 'px';
+        });
+
+        // Tab support in textarea
+        codeEditor.addEventListener('keydown', function(e) {
+            if (e.key === 'Tab') {
+                e.preventDefault();
+                const start = this.selectionStart;
+                const end = this.selectionEnd;
+                this.value = this.value.substring(0, start) + '    ' + this.value.substring(end);
+                this.selectionStart = this.selectionEnd = start + 4;
+            }
+        });
+    </script>
+</body>
+</html>

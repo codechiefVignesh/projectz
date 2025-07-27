@@ -4,7 +4,7 @@ from .models import Problem
 class ProblemForm(forms.ModelForm):
     class Meta:
         model = Problem
-        fields = ['title', 'difficulty', 'description', 'tags', 'languages', 'acceptance_rate', 'submissions']
+        fields = ['title', 'difficulty', 'description', 'tags', 'languages', 'acceptance_rate', 'submissions', 'testcases']
         
     title = forms.CharField(
         max_length=200,
@@ -58,3 +58,5 @@ class ProblemForm(forms.ModelForm):
             'placeholder': 'e.g. 1.2M, 856K'
         })
     )
+    
+    testcases = forms.CharField(widget=forms.HiddenInput(), required=False)
