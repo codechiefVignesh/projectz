@@ -22,6 +22,9 @@ import tempfile
 import os
 import time
 import signal
+import psutil
+import threading
+import time
 
 # Create your views here.
 @login_required(login_url='login')
@@ -267,17 +270,15 @@ def get_execution_command(language, file_path):
     return commands.get(language, ['echo', 'Language not supported'])
 
 def execute_code_safely(code, language, test_input="", timeout=EXECUTION_TIMEOUT):
-    """Execute code safely with timeout and input"""
+    """Execute code safely with timeout, input and memory monitoring (Windows compatible)"""
     try:
         # Create temporary file
         temp_file = create_temp_file(code, language)
         
-        # Get execution command
-        cmd = get_execution_command(language, temp_file)
-        
-        # Execute with timeout
+        # Get execution command  
         start_time = time.time()
-        
+        memory_tracker = {'peak': 0}
+
         if language in ['java', 'cpp', 'c', 'python']:
             # For compiled languages, compile first
             if language == 'java':
@@ -319,16 +320,38 @@ def execute_code_safely(code, language, test_input="", timeout=EXECUTION_TIMEOUT
         else:
             # For interpreted languages
             run_cmd = cmd
+        # [Keep existing compilation logic for java, cpp, c]
         
-        # Execute the code
-        result = subprocess.run(
+        # Execute the code with memory monitoring
+        process = subprocess.Popen(
             run_cmd,
-            input=test_input,
-            capture_output=True,
-            text=True,
-            timeout=timeout
+            stdin=subprocess.PIPE,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+            text=True
         )
-        print(result)
+        
+        # Start memory monitoring in separate thread
+        memory_thread = threading.Thread(
+            target=monitor_memory_usage, 
+            args=(psutil.Process(process.pid), memory_tracker)
+        )
+        memory_thread.daemon = True
+        memory_thread.start()
+        
+        try:
+            stdout, stderr = process.communicate(input=test_input, timeout=timeout)
+            memory_thread.join(timeout=0.1)  # Wait briefly for thread to finish
+        except subprocess.TimeoutExpired:
+            process.kill()
+            process.wait()
+            return {
+                'success': False,
+                'error': f'Time Limit Exceeded (>{timeout}s)',
+                'runtime': timeout * 1000,
+                'memory_used': memory_tracker['peak']
+            }
+        
         execution_time = time.time() - start_time
         
         # Clean up temporary files
@@ -347,30 +370,27 @@ def execute_code_safely(code, language, test_input="", timeout=EXECUTION_TIMEOUT
         except:
             pass
         
-        if result.returncode == 0:
+        if process.returncode == 0:
             return {
                 'success': True,
-                'output': result.stdout,
-                'runtime': round(execution_time * 1000, 2)  # Convert to milliseconds
+                'output': stdout,
+                'runtime': round(execution_time * 1000, 2),
+                'memory_used': round(memory_tracker['peak'], 2)
             }
         else:
             return {
                 'success': False,
-                'error': f'Runtime Error:\n{result.stderr}',
-                'runtime': round(execution_time * 1000, 2)
+                'error': f'Runtime Error:\n{stderr}',
+                'runtime': round(execution_time * 1000, 2),
+                'memory_used': round(memory_tracker['peak'], 2)
             }
             
-    except subprocess.TimeoutExpired:
-        return {
-            'success': False,
-            'error': f'Time Limit Exceeded (>{timeout}s)',
-            'runtime': timeout * 1000
-        }
     except Exception as e:
         return {
             'success': False,
             'error': f'Execution Error: {str(e)}',
-            'runtime': 0
+            'runtime': 0,
+            'memory_used': 0
         }
 
 def run_test_cases(code, language, test_cases):
@@ -378,6 +398,7 @@ def run_test_cases(code, language, test_cases):
     results = []
     total_runtime = 0
     passed_count = 0
+    total_memory = 0
     
     for i, test_case in enumerate(test_cases):
         test_input = test_case.get('input', '')
@@ -398,9 +419,11 @@ def run_test_cases(code, language, test_cases):
                 'expected': expected_output,
                 'actual': actual_output,
                 'passed': is_correct,
-                'runtime': result['runtime']
+                'runtime': result['runtime'],
+                'memory_used': result.get('memory_used', 0) 
             })
             total_runtime += result['runtime']
+            total_memory = max(total_memory, result.get('memory_used', 0))
         else:
             results.append({
                 'test_case': i + 1,
@@ -409,9 +432,11 @@ def run_test_cases(code, language, test_cases):
                 'actual': '',
                 'passed': False,
                 'error': result['error'],
-                'runtime': result['runtime']
+                'runtime': result['runtime'],
+                'memory_used': result.get('memory_used', 0)
             })
             total_runtime += result['runtime']
+            total_memory = max(total_memory, result.get('memory_used', 0))
             break  # Stop on first error
     
     return {
@@ -419,6 +444,7 @@ def run_test_cases(code, language, test_cases):
         'passed_count': passed_count,
         'total_count': len(test_cases),
         'total_runtime': total_runtime,
+        'peak_memory': total_memory,
         'all_passed': passed_count == len(test_cases)
     }
 
@@ -593,8 +619,8 @@ def submit_code(request, id, problem_id):
                     language=language,
                     verdict=verdict if verdict else 'Unknown',
                     score=score if score is not None else 0,
-                    runtime=test_results.get('total_runtime', 0) if test_results else 0,
-                    memory_used=15.3,  # Mock memory usage
+                    runtime=test_results.get('total_runtime', 0) if test_results else 0,  
+                    memory_used=test_results.get('peak_memory', 0),  # Mock memory usage
                     test_cases_passed=test_results.get('passed_count', 0) if test_results else 0,
                     total_test_cases=test_results.get('total_count', 0) if test_results else 0,
                     status='Accepted' if verdict == 'Accepted' else 'Wrong Answer'
@@ -629,7 +655,7 @@ def submit_code(request, id, problem_id):
                     "✓ Accepted\n\n"
                     f"{str(test_results['passed_count'])}/{str(test_results['total_count'])} test cases passed.\n"
                     f"Runtime: {test_results['total_runtime']:.2f}ms\n"
-                    "Memory: 15.3 MB\n"
+                    f"Memory: {test_results['peak_memory']:.2f}\n"
                     f"Score: {score:.1f}/100\n\n"
                     "Congratulations! Your solution has been accepted."
                 )
@@ -720,3 +746,19 @@ def solution_history(request, user_id, problem_id):
     }
     
     return render(request, 'solution_history_page.html', context)
+
+
+
+def monitor_memory_usage(process, memory_tracker):
+    """Monitor memory usage of a process in a separate thread"""
+    try:
+        while process.poll() is None:  # While process is running
+            try:
+                mem_info = process.memory_info()
+                current_memory = mem_info.rss / (1024 * 1024)  # Convert to MB
+                memory_tracker['peak'] = max(memory_tracker['peak'], current_memory)
+                time.sleep(0.01)  # Check every 10ms
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                break
+    except:
+        pass

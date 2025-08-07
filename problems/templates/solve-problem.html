@@ -139,13 +139,21 @@
             overflow-y: auto;
         }
 
+        
+        /* Right Panel - Code Editor */
         .right-panel {
             width: 50%;
             background: var(--bg-secondary);
             display: flex;
             flex-direction: column;
+            height: calc(100vh - 60px);
         }
 
+            #monacoEditor {
+                flex: 1; /* Take remaining space */
+                min-height: 0; /* Important for flex child */
+                width: 100%;
+            }
         /* Resizer */
         .resizer {
             width: 4px;
@@ -243,15 +251,16 @@
             color: var(--text-primary);
         }
 
-        /* Code Editor Panel */
         .editor-header {
-            background: var(--bg-primary);
-            border-bottom: 1px solid var(--border-color);
-            padding: 1rem;
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
+    background: var(--bg-primary);
+    border-bottom: 1px solid var(--border-color);
+    padding: 1rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-shrink: 0; /* Prevent header from shrinking */
+}
+
 
         .language-selector {
             background: var(--bg-secondary);
@@ -327,13 +336,15 @@
         }
 
         /* Output Panel */
-        .output-panel {
-            background: var(--bg-primary);
-            border-top: 1px solid var(--border-color);
-            max-height: 200px;
-            overflow-y: auto;
-            display: none;
-        }
+       .output-panel {
+    background: var(--bg-primary);
+    border-top: 1px solid var(--border-color);
+    max-height: 200px;
+    min-height: 40px; /* Minimum height when visible */
+    overflow-y: auto;
+    display: none;
+    flex-shrink: 0; /* Prevent shrinking */
+}
 
         .output-panel.visible {
             display: block;
@@ -645,14 +656,15 @@
                 </div>
             </div>
             
-            <textarea class="code-editor" id="codeEditor" placeholder="Write your solution here...">def twoSum(nums, target):
+            <!-- <textarea class="code-editor" id="codeEditor" placeholder="Write your solution here...">def twoSum(nums, target):
     """
     :type nums: List[int]
     :type target: int
     :rtype: List[int]
     """
     # Your code here
-    pass</textarea>
+    pass</textarea> -->
+            <div id="monacoEditor" style="height: 100%; width: 100%;"></div>
 
             <div class="output-panel" id="outputPanel">
                 <div class="output-header">
@@ -802,110 +814,112 @@ int main() {
         });
 
         function runCode() {
-            const code = codeEditor.value.trim();
-            if (!code) {
-                showOutput('No code to run!', 'error');
-                return;
-            }
+    // Get code from Monaco editor instead of textarea
+    const code = window.editor ? window.editor.getValue().trim() : '';
+    if (!code) {
+        showOutput('No code to run!', 'error');
+        return;
+    }
 
-            // Show loading state
-            runBtn.classList.add('loading');
-            runBtn.innerHTML = '<div class="spinner"></div> Running...';
+    // Show loading state
+    runBtn.classList.add('loading');
+    runBtn.innerHTML = '<div class="spinner"></div> Running...';
 
-            // Send code to backend for execution
-            fetch(`/home/{{ user.id }}/problems/{{ problem.id }}/run/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCsrfToken(),
-                },
-                body: JSON.stringify({
-                    code: code,
-                    language: languageSelector.value
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Reset button
-                runBtn.classList.remove('loading');
-                runBtn.innerHTML = `
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="5,3 19,12 5,21"></polygon>
-                    </svg>
-                    Run
-                `;
+    // Send code to backend for execution
+    fetch(`/home/{{ user.id }}/problems/{{ problem.id }}/run/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify({
+            code: code,
+            language: languageSelector.value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Reset button
+        runBtn.classList.remove('loading');
+        runBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5,3 19,12 5,21"></polygon>
+            </svg>
+            Run
+        `;
 
-                if (data.success) {
-                    showOutput(data.output, 'success');
-                } else {
-                    showOutput(data.error || 'Execution failed', 'error');
-                }
-            })
-            .catch(error => {
-                // Reset button
-                runBtn.classList.remove('loading');
-                runBtn.innerHTML = `
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polygon points="5,3 19,12 5,21"></polygon>
-                    </svg>
-                    Run
-                `;
-                showOutput('Error: ' + error.message, 'error');
-            });
+        if (data.success) {
+            showOutput(data.output, 'success');
+        } else {
+            showOutput(data.error || 'Execution failed', 'error');
         }
+    })
+    .catch(error => {
+        // Reset button
+        runBtn.classList.remove('loading');
+        runBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polygon points="5,3 19,12 5,21"></polygon>
+            </svg>
+            Run
+        `;
+        showOutput('Error: ' + error.message, 'error');
+    });
+}
 
         function submitCode() {
-            const code = codeEditor.value.trim();
-            if (!code) {
-                showOutput('No code to submit!', 'error');
-                return;
-            }
+    // Get code from Monaco editor instead of textarea
+    const code = window.editor ? window.editor.getValue().trim() : '';
+    if (!code) {
+        showOutput('No code to submit!', 'error');
+        return;
+    }
 
-            // Show loading state
-            submitBtn.classList.add('loading');
-            submitBtn.innerHTML = '<div class="spinner"></div> Submitting...';
+    // Show loading state
+    submitBtn.classList.add('loading');
+    submitBtn.innerHTML = '<div class="spinner"></div> Submitting...';
 
-            // Send code to backend for submission
-            fetch(`/home/{{ user.id }}/problems/{{ problem.id }}/submit/`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRFToken': getCsrfToken(),
-                },
-                body: JSON.stringify({
-                    code: code,
-                    language: languageSelector.value
-                })
-            })
-            .then(response => response.json())
-            .then(data => {
-                // Reset button
-                submitBtn.classList.remove('loading');
-                submitBtn.innerHTML = `
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="20,6 9,17 4,12"></polyline>
-                    </svg>
-                    Submit
-                `;
+    // Send code to backend for submission
+    fetch(`/home/{{ user.id }}/problems/{{ problem.id }}/submit/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify({
+            code: code,
+            language: languageSelector.value
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Reset button
+        submitBtn.classList.remove('loading');
+        submitBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20,6 9,17 4,12"></polyline>
+            </svg>
+            Submit
+        `;
 
-                if (data.success) {
-                    showOutput(data.result, 'success');
-                } else {
-                    showOutput(data.error || 'Submission failed', 'error');
-                }
-            })
-            .catch(error => {
-                // Reset button
-                submitBtn.classList.remove('loading');
-                submitBtn.innerHTML = `
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                        <polyline points="20,6 9,17 4,12"></polyline>
-                    </svg>
-                    Submit
-                `;
-                showOutput('Error: ' + error.message, 'error');
-            });
+        if (data.success) {
+            showOutput(data.result, 'success');
+        } else {
+            showOutput(data.error || 'Submission failed', 'error');
         }
+    })
+    .catch(error => {
+        // Reset button
+        submitBtn.classList.remove('loading');
+        submitBtn.innerHTML = `
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <polyline points="20,6 9,17 4,12"></polyline>
+            </svg>
+            Submit
+        `;
+        showOutput('Error: ' + error.message, 'error');
+    });
+}
 
         function getCsrfToken() {
             // Try multiple ways to get CSRF token
@@ -1101,5 +1115,58 @@ int main() {
             }
         });
     </script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs/loader.min.js"></script>
+<script>
+  require.config({ paths: { vs: "https://cdnjs.cloudflare.com/ajax/libs/monaco-editor/0.45.0/min/vs" } });
+
+  require(["vs/editor/editor.main"], function () {
+    // Wait a bit for the DOM to be ready
+    setTimeout(() => {
+      window.editor = monaco.editor.create(document.getElementById("monacoEditor"), {
+        value: codeTemplates[languageSelector.value] || "",
+        language: languageSelector.value,
+        theme: document.body.getAttribute('data-theme') === 'dark' ? "vs-dark" : "vs",
+        automaticLayout: true,
+        fontSize: 14,
+        minimap: { enabled: false },
+        scrollBeyondLastLine: false,
+        wordWrap: 'on',
+        lineNumbers: 'on',
+        folding: true,
+        selectOnLineNumbers: true,
+        matchBrackets: 'always',
+        autoClosingBrackets: 'always',
+        autoClosingQuotes: 'always',
+        autoIndent: 'full',
+      });
+
+      // Update theme when theme toggle is clicked
+      const originalThemeToggle = themeToggle.addEventListener;
+      themeToggle.addEventListener('click', () => {
+        setTimeout(() => {
+          const newTheme = document.body.getAttribute('data-theme');
+          window.editor.updateOptions({
+            theme: newTheme === 'dark' ? 'vs-dark' : 'vs'
+          });
+        }, 50);
+      });
+
+      // Language selector update
+      languageSelector.addEventListener("change", () => {
+        const newLang = languageSelector.value;
+        const code = codeTemplates[newLang] || "";
+        monaco.editor.setModelLanguage(window.editor.getModel(), newLang);
+        window.editor.setValue(code);
+      });
+      
+      // Force layout update after initialization
+      setTimeout(() => {
+        window.editor.layout();
+      }, 100);
+      
+    }, 100);
+  });
+</script>
+
 </body>
 </html>
