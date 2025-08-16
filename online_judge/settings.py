@@ -19,7 +19,7 @@ IS_VERCEL = os.environ.get('VERCEL', False)
 if IS_VERCEL:
     # Production settings for Vercel
     DEBUG = False
-    ALLOWED_HOSTS = ['.vercel.app', '.now.sh', 'localhost', '127.0.0.1']
+    ALLOWED_HOSTS = ['.vercel.app', '.now.sh', 'localhost', '127.0.0.1', 'https://projectz-production.up.railway.app/']
     
     # Database for production - use external database
     if config('DATABASE_URL', default=''):
