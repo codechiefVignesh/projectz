@@ -1,16 +1,19 @@
 {
-  "version": 2,
+  "functions": {
+    "online_judge/wsgi.py": {
+      "runtime": "python3.10"
+    }
+  },
   "builds": [
     {
       "src": "online_judge/wsgi.py",
-      "use": "@vercel/python"
+      "use": "@vercel/python",
+      "config": {
+        "runtime": "python3.10"
+      }
     }
   ],
   "routes": [
-    {
-      "src": "/static/(.*)",
-      "dest": "/static/$1"
-    },
     {
       "src": "/(.*)",
       "dest": "online_judge/wsgi.py"
