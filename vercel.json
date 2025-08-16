@@ -1,9 +1,4 @@
 {
-  "functions": {
-    "online_judge/wsgi.py": {
-      "runtime": "python3.10"
-    }
-  },
   "builds": [
     {
       "src": "online_judge/wsgi.py",
