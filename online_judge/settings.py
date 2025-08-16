@@ -1,11 +1,10 @@
 """
 Django settings for online_judge project.
-Updated for Vercel deployment.
+Updated for Railway deployment.
 """
 from decouple import config
 from pathlib import Path
 import os
-import dj_database_url
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -13,34 +12,40 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = config('SECRET_KEY', default='django-insecure-fallback-key-for-development')
 
-# Detect Vercel environment
-IS_VERCEL = os.environ.get('VERCEL', False)
+# Detect Railway environment
+IS_RAILWAY = os.environ.get('RAILWAY_ENVIRONMENT_NAME') is not None
 
-if IS_VERCEL:
-    # Production settings for Vercel
+if IS_RAILWAY:
+    # Production settings for Railway
     DEBUG = False
-    ALLOWED_HOSTS = ['.vercel.app', '.now.sh', 'localhost', '127.0.0.1', 'https://projectz-production.up.railway.app/']
+    ALLOWED_HOSTS = [
+        '.railway.app', 
+        'projectz-production.up.railway.app',
+        'localhost', 
+        '127.0.0.1'
+    ]
     
-    # Database for production - use external database
-    if config('DATABASE_URL', default=''):
+    # Database for Railway - use DATABASE_URL
+    if 'DATABASE_URL' in os.environ:
+        import dj_database_url
         DATABASES = {
-            'default': dj_database_url.parse(config('DATABASE_URL'))
+            'default': dj_database_url.parse(os.environ['DATABASE_URL'])
         }
     else:
-        # Fallback to SQLite in /tmp for testing
+        # Fallback to SQLite
         DATABASES = {
             'default': {
                 'ENGINE': 'django.db.backends.sqlite3',
-                'NAME': '/tmp/db.sqlite3',
+                'NAME': BASE_DIR / 'db.sqlite3',
             }
         }
     
-    # Static files for Vercel
+    # Static files for Railway
     STATIC_URL = '/static/'
-    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles_build', 'static')
+    STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
     
 else:
-    # Development settings (your existing settings)
+    # Development settings (local development)
     DEBUG = config('DEBUG', default=True, cast=bool)
     ALLOWED_HOSTS = config('ALLOWED_HOSTS', default='localhost').split(',')
     
@@ -166,6 +171,6 @@ if not DEBUG:
     SECURE_HSTS_INCLUDE_SUBDOMAINS = True
     SECURE_HSTS_PRELOAD = True
     
-    if IS_VERCEL:
+    if IS_RAILWAY:
         SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
         SECURE_SSL_REDIRECT = True
