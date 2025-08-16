@@ -15,6 +15,7 @@ urlpatterns = [
     path('home/<int:id>/problems/<int:problem_id>/run/', run_code, name='run_code'),
     path('home/<int:id>/problems/<int:problem_id>/submit/', submit_code, name='submit_code'),
     path('home/<int:user_id>/problems/<int:problem_id>/solutions/', solution_history, name='solution-history'),
+    path('home/<int:user_id>/problems/<int:problem_id>/ai-assist/', get_ai_assistance, name='ai-assistance'),
 ]
 
 

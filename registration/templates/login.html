@@ -51,7 +51,8 @@
                         Password
                     </label>
                     <div class="input-wrapper">
-                        {{ form.password }}
+                        <input type="password" name="password" autocomplete="current-password" 
+                            data-lpignore="true" data-form-type="other" required>
                         <button type="button" class="password-toggle" onclick="togglePassword()">
                             <i class="fas fa-eye" id="password-eye"></i>
                         </button>
@@ -101,13 +102,13 @@
                 body.classList.add('light');
                 icon.classList.remove('fa-sun');
                 icon.classList.add('fa-moon');
-                localStorage.setItem('theme', 'light');
+                sessionStorage.setItem('theme', 'light');
             } else {
                 body.classList.remove('light');
                 body.classList.add('dark');
                 icon.classList.remove('fa-moon');
                 icon.classList.add('fa-sun');
-                localStorage.setItem('theme', 'dark');
+                sessionStorage.setItem('theme', 'dark');
             }
         }
 
@@ -128,7 +129,7 @@
 
         // Load saved theme and icon
         window.onload = () => {
-            const theme = localStorage.getItem('theme') || 'light';
+            const theme = sessionStorage.getItem('theme') || 'light';
             const icon = document.getElementById('theme-icon');
             document.body.classList.remove('light', 'dark');
             document.body.classList.add(theme);
@@ -148,6 +149,16 @@
                 card.style.transition = 'all 0.5s ease';
                 card.style.opacity = '1';
                 card.style.transform = 'translateY(0)';
+            }, 100);
+        });
+
+            document.querySelector('.auth-form').addEventListener('submit', function() {
+            // Clear password field after a brief delay
+            setTimeout(() => {
+                const passwordField = document.querySelector('input[type="password"]');
+                if (passwordField) {
+                    passwordField.value = '';
+                }
             }, 100);
         });
     </script>

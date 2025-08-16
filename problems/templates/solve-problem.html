@@ -538,6 +538,59 @@
                 cursor: row-resize;
             }
         }
+
+
+.action-btn.loading {
+    opacity: 0.6;
+    pointer-events: none;
+}
+
+.ai-assistance-panel {
+    background: var(--bg-secondary);
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    margin: 1rem 0;
+    overflow: hidden;
+}
+
+.ai-assistance-header {
+    background: var(--accent-color);
+    color: white;
+    padding: 0.75rem 1rem;
+    font-weight: 600;
+    font-size: 0.9rem;
+}
+
+.ai-assistance-content {
+    padding: 1rem;
+    line-height: 1.6;
+}
+
+.output-resizer {
+    height: 4px;
+    background: var(--border-color);
+    cursor: row-resize;
+    position: relative;
+    transition: background 0.2s;
+    flex-shrink: 0;
+}
+
+.output-resizer:hover {
+    background: var(--accent-color);
+}
+
+.output-panel {
+    background: var(--bg-primary);
+    border-top: 1px solid var(--border-color);
+    max-height: none; /* Remove fixed max height */
+    min-height: 200px; /* Increase minimum height */
+    height: 250px; /* Default height */
+    overflow-y: auto;
+    display: none;
+    flex-shrink: 0;
+    resize: vertical; /* Allow vertical resize */
+}
+
     </style>
 </head>
 <body data-theme="light">
@@ -1166,7 +1219,150 @@ int main() {
       
     }, 100);
   });
+
+// Add AI assistance buttons to the editor header
+function addAIAssistanceButtons() {
+    const editorActions = document.querySelector('.editor-actions');
+    const aiButtons = `
+        <button class="action-btn" id="getHintBtn" title="Get AI Hint">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <circle cx="12" cy="12" r="10"></circle>
+                <path d="M12 8v4l3 3"></path>
+            </svg>
+            Hint
+        </button>
+        <button class="action-btn" id="debugBtn" title="Debug Code">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 15h2v-6h-2v6zm0-8h2V7h-2v2z"/>
+            </svg>
+            Debug
+        </button>
+    `;
+    
+    editorActions.insertAdjacentHTML('afterbegin', aiButtons);
+    
+    // Add event listeners
+    document.getElementById('getHintBtn').addEventListener('click', () => getAIAssistance('hint'));
+    document.getElementById('debugBtn').addEventListener('click', () => getAIAssistance('debug'));
+}
+
+// AI assistance function
+function getAIAssistance(type) {
+    const code = window.editor ? window.editor.getValue().trim() : '';
+    
+    if (!code && type !== 'hint') {
+        showOutput('Please write some code first!', 'error');
+        return;
+    }
+    
+    const btn = type === 'hint' ? document.getElementById('getHintBtn') : document.getElementById('debugBtn');
+    const originalHTML = btn.innerHTML;
+    
+    // Show loading state
+    btn.classList.add('loading');
+    btn.innerHTML = '<div class="spinner"></div> Getting AI help...';
+    
+    fetch(`/home/{{ user.id }}/problems/{{ problem.id }}/ai-assist/`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'X-CSRFToken': getCsrfToken(),
+        },
+        body: JSON.stringify({
+            code: code,
+            language: languageSelector.value,
+            type: type
+        })
+    })
+    .then(response => response.json())
+    .then(data => {
+        // Reset button
+        btn.classList.remove('loading');
+        btn.innerHTML = originalHTML;
+        
+        if (data.success) {
+            showAIAssistance(data.assistance, type);
+        } else {
+            showOutput('AI assistance error: ' + (data.error || 'Unknown error'), 'error');
+        }
+    })
+    .catch(error => {
+        // Reset button
+        btn.classList.remove('loading');
+        btn.innerHTML = originalHTML;
+        showOutput('Error: ' + error.message, 'error');
+    });
+}
+
+// Show AI assistance in output panel
+function showAIAssistance(assistance, type) {
+    const typeLabels = {
+        'hint': '💡 AI Hint',
+        'debug': '🐛 Debug Suggestion',
+        'optimize': '⚡ Optimization',
+        'explain': '📝 Code Explanation'
+    };
+    
+    outputContent.innerHTML = `
+        <div style="background: var(--bg-secondary); padding: 1rem; border-radius: 8px; border-left: 4px solid var(--accent-color);">
+            <h4 style="color: var(--accent-color); margin-bottom: 0.5rem; font-size: 1rem;">
+                ${typeLabels[type] || 'AI Assistance'}
+            </h4>
+            <div style="line-height: 1.6; color: var(--text-primary);">
+                ${assistance.replace(/\n/g, '<br>')}
+            </div>
+        </div>
+    `;
+    outputContent.className = 'output-content';
+    outputPanel.classList.add('visible');
+}
+
+// Initialize AI buttons when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    // Add a small delay to ensure Monaco editor is loaded
+    setTimeout(addAIAssistanceButtons, 1000);
+});
+function toggleOutputSize() {
+    const outputPanel = document.getElementById('outputPanel');
+    const rightPanel = document.querySelector('.right-panel');
+    
+    if (outputPanel.classList.contains('maximized')) {
+        // Restore normal size
+        outputPanel.classList.remove('maximized');
+        outputPanel.style.height = '250px';
+    } else {
+        // Maximize
+        outputPanel.classList.add('maximized');
+        outputPanel.style.height = '80vh';
+    }
+    
+    // Resize Monaco editor
+    if (window.editor) {
+        setTimeout(() => window.editor.layout(), 100);
+    }
+}
+
+// Add maximize button to output header
+function addMaximizeButton() {
+    const outputHeader = document.querySelector('.output-header');
+    const maximizeBtn = document.createElement('button');
+    maximizeBtn.innerHTML = '⬆️';
+    maximizeBtn.className = 'action-btn';
+    maximizeBtn.style.padding = '0.25rem 0.5rem';
+    maximizeBtn.style.fontSize = '0.75rem';
+    maximizeBtn.title = 'Toggle size';
+    maximizeBtn.onclick = toggleOutputSize;
+    
+    outputHeader.appendChild(maximizeBtn);
+}
+
+// Call this when page loads
+document.addEventListener('DOMContentLoaded', () => {
+    setTimeout(addMaximizeButton, 1000);
+});
+
 </script>
+
 
 </body>
 </html>

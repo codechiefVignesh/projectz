@@ -25,6 +25,9 @@ import signal
 import psutil
 import threading
 import time
+from .gemini_service import GeminiService
+import json
+from django.http import JsonResponse
 
 # Create your views here.
 @login_required(login_url='login')
@@ -762,3 +765,31 @@ def monitor_memory_usage(process, memory_tracker):
                 break
     except:
         pass
+
+def get_ai_assistance(request, user_id, problem_id):
+    if request.method == 'POST':
+        try:
+            data = json.loads(request.body)
+            code = data.get('code', '')
+            language = data.get('language', 'python')
+            assistance_type = data.get('type', 'hint')  # hint, debug, optimize, explain
+            
+            problem = get_object_or_404(Problem, id=problem_id)
+            
+            gemini_service = GeminiService()
+            result = gemini_service.get_coding_assistance(
+                problem_description=problem.description,
+                current_code=code,
+                language=language,
+                assistance_type=assistance_type
+            )
+            
+            return JsonResponse(result)
+            
+        except Exception as e:
+            return JsonResponse({
+                'success': False,
+                'error': str(e)
+            })
+    
+    return JsonResponse({'success': False, 'error': 'Invalid request method'})

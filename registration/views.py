@@ -43,10 +43,15 @@ def render_loginpage(request):
                 return redirect('problems-page', id=user.id)
             else:
                 error = 'Invalid email or password'
+        form = LoginForm()
     else:
         form = LoginForm()
 
-    return render(request, 'login.html', {'form': form, 'error': error})
+    response = render(request, 'login.html', {'form': form, 'error': error})
+    response['Cache-Control'] = 'no-cache, no-store, must-revalidate'
+    response['Pragma'] = 'no-cache'
+    response['Expires'] = '0'
+    return response
 
 @never_cache
 @csrf_protect
